@@ -11,7 +11,7 @@ void drive_robot(float lin_x, float ang_z)
     ball_chaser::DriveToTarget srv;
     srv.request.linear_x = lin_x;
     srv.request.angular_z = ang_z;
-    
+
     if (!client.call(srv)) {
         ROS_ERROR("Failed to call service DriveToTarget.");
     }
@@ -22,28 +22,30 @@ void process_image_callback(const sensor_msgs::Image img)
 {
 
     int white_pixel = 255;
-    
-    bool found = false;    
-    for (int i = 0; i < img.height * img.step; i++) {
-        if (img.data[i] == white_pixel) {
-            int pos_v = i % img.step;
-            if (pos_v < img.step / 3) {
-                // ball is on the left
-                drive_robot(0.0, 0.1);
-            } else if (pos_v < img.step * 2 / 3) {
-                // ball is in front
-                drive_robot(0.1, 0);
-            } else {
-                // ball is on the right
-                drive_robot(0.0, -0.1);
-            }
-            bool found = true;
-            break;
+    int pos_h_sum = 0;
+    int counter = 0;
+    for (int i = 0; i < img.height * img.step; i+=3) {
+        if (img.data[i] == white_pixel && img.data[i+1] == white_pixel && img.data[i+2] == white_pixel) {
+            int pos_h = i % img.step;
+            pos_h_sum += pos_h;
+            counter++;
         }
     }
-    if (!found) {
-        // stop
-        drive_robot(0.0, 0.0);
+    if (counter > 0) {
+      float center_h = pos_h_sum / counter;
+      if (center_h < img.step / 3) {
+        // ball is on the left
+        drive_robot(0.0, 0.1);
+      } else if (center_h < img.step * 2 / 3) {
+        // ball is in front
+        drive_robot(0.1, 0.0);
+      } else {
+        // ball is on the right
+        drive_robot(0.0, -0.1);
+      }
+    } else {
+      // stop
+      drive_robot(0.0, 0.0);
     }
 }
 
