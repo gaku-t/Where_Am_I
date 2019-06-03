@@ -15,6 +15,11 @@
     <!-- Define initial pose -->
     <param name="initial_pose_x" value="0"/>
     <param name="initial_pose_y" value="0"/>
+
+    <!-- Tune parameters -->
+    <param name="max_particles" value="6000"/>
+    <param name="update_min_d" value="0.15"/>
+    <param name="update_min_a" value="0.4"/> 
   </node>
 
   <!-- Move Base -->
